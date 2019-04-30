@@ -1,9 +1,9 @@
 package batch.bank
 
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.max
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Bank example
@@ -16,8 +16,11 @@ import org.apache.spark.sql.functions.max
   * Q2. Print all the accounts with a negative balance
   *
   * The code exemplifies the use of SQL primitives
+  *
+  * Version 2. Exemplifies the benefits of persisting intermediate results to
+  * enable reuse.
   */
-object Bank {
+object Bank2 {
   def main(args: Array[String]): Unit = {
     val master = if (args.length > 0) args(0) else "local"
     val filePath = if (args.length > 1) args(1) else "./"
@@ -25,7 +28,7 @@ object Bank {
     val sc = new SparkContext(
       new SparkConf()
         .setMaster(master)
-        .setAppName("Bank")
+        .setAppName("Bank2")
     )
 
     val spark = SparkSession.builder
@@ -54,6 +57,10 @@ object Bank {
       .schema(customSchema)
       .csv(filePath + "files/bank/withdrawals.csv")
 
+    withdrawals.persist()
+
+    withdrawals.collect().foreach(println)
+
     // Person with the maximum total amount of withdrawals
 
     withdrawals
@@ -61,8 +68,6 @@ object Bank {
         .sum("amount")
         .drop("account")
         .agg(max("sum(amount)"))
-
-    withdrawals.collect().foreach(println)
 
     // Accounts with negative balance
 
