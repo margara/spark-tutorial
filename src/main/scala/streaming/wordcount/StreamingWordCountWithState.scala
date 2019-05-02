@@ -2,7 +2,7 @@ package streaming.wordcount
 
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, State, StateSpec, StreamingContext}
-import streaming.StreamingExamples
+import utils.Utils
 
 /**
   * Stateful streaming example:
@@ -14,7 +14,7 @@ import streaming.StreamingExamples
   */
 object StreamingWordCountWithState {
   def main(args: Array[String]): Unit = {
-    StreamingExamples.setStreamingLogLevels()
+    Utils.setLogLevels()
 
     // You need to use at least two threads, one reads from the socket and one computes and prints
     val master = if (args.length > 0) args(0) else "local[2]"
@@ -24,7 +24,7 @@ object StreamingWordCountWithState {
     val sc = new StreamingContext(
       new SparkConf()
         .setMaster(master)
-        .setAppName("StreamingWordCount"),
+        .setAppName("StreamingWordCountWithState"),
       Seconds(5)
     )
 

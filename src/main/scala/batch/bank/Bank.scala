@@ -1,9 +1,9 @@
 package batch.bank
 
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.max
+import utils.Utils
 
 /**
   * Bank example
@@ -19,18 +19,14 @@ import org.apache.spark.sql.functions.max
   */
 object Bank {
   def main(args: Array[String]): Unit = {
+    Utils.setLogLevels()
+
     val master = if (args.length > 0) args(0) else "local"
     val filePath = if (args.length > 1) args(1) else "./"
 
-    val sc = new SparkContext(
-      new SparkConf()
-        .setMaster(master)
-        .setAppName("Bank")
-    )
-
     val spark = SparkSession.builder
-      .master("local")
-      .appName("Spark CSV Reader")
+      .master(master)
+      .appName("Bank")
       .getOrCreate
 
     val customSchema = StructType(
@@ -88,7 +84,7 @@ object Bank {
 
     negativeAccounts.collect.foreach(println)
 
-    sc.stop()
+    spark.stop()
   }
 
 }

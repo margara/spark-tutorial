@@ -4,6 +4,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.max
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.{SparkConf, SparkContext}
+import utils.Utils
 
 /**
   * Bank example
@@ -22,18 +23,14 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 object Bank2 {
   def main(args: Array[String]): Unit = {
+    Utils.setLogLevels()
+
     val master = if (args.length > 0) args(0) else "local"
     val filePath = if (args.length > 1) args(1) else "./"
 
-    val sc = new SparkContext(
-      new SparkConf()
-        .setMaster(master)
-        .setAppName("Bank2")
-    )
-
     val spark = SparkSession.builder
-      .master("local")
-      .appName("Spark CSV Reader")
+      .master(master)
+      .appName("Bank2")
       .getOrCreate
 
     val customSchema = StructType(
@@ -93,7 +90,7 @@ object Bank2 {
 
     negativeAccounts.collect.foreach(println)
 
-    sc.stop()
+    spark.stop()
   }
 
 }
