@@ -1,18 +1,18 @@
 package streaming.wordcount
 
-import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{Seconds, State, StateSpec, StreamingContext}
 import streaming.StreamingExamples
 
 /**
-  * First streaming example:
-  * reads words from a socket and counts the occurrence of each word in a window of 10 seconds
-  * sliding every 5 seconds.
+  * Stateful streaming example:
+  * reads words from a socket and counts the occurrence of each word, printing the new
+  * results every 5 seconds.
   *
   * Before running it, you need to open a socket on the defined host and address
   * (by default localhost:9999). For example, you can run nc -l 9999 on the terminal.
   */
-object StreamingWordCount {
+object StreamingWordCountWithState {
   def main(args: Array[String]): Unit = {
     StreamingExamples.setStreamingLogLevels()
 
@@ -25,17 +25,29 @@ object StreamingWordCount {
       new SparkConf()
         .setMaster(master)
         .setAppName("StreamingWordCount"),
-      Seconds(1)
+      Seconds(5)
     )
+
+    // Checkpoint directory where the state is saved
+    sc.checkpoint("/tmp/")
 
     val textLines = sc.socketTextStream(socketHost, socketPort)
 
+    val initialRDD = sc.sparkContext.emptyRDD[Tuple2[String, Int]]
+
+    val stateMapFunction = (word: String, count: Option[Int], state: State[Int]) => {
+      val sum = count.getOrElse(0) + state.getOption.getOrElse(0)
+      val output = (word, sum)
+      state.update(sum)
+      output
+    }
+
     val counts = textLines
-      .window(Seconds(10), Seconds(5))
+      .window(Seconds(5))
       .map(_.toLowerCase)
       .flatMap(line => line.split(" "))
       .map(word => (word, 1))
-      .reduceByKey(_ + _)
+      .mapWithState(StateSpec.function(stateMapFunction).initialState(initialRDD))
 
     counts.foreachRDD(rdd => rdd.collect().foreach(println))
 
