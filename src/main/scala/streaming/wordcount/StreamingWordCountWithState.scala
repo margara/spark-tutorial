@@ -17,7 +17,7 @@ object StreamingWordCountWithState {
     Utils.setLogLevels()
 
     // You need to use at least two threads, one reads from the socket and one computes and prints
-    val master = if (args.length > 0) args(0) else "local[2]"
+    val master = if (args.length > 0) args(0) else "local[4]"
     val socketHost = if (args.length > 1) args(1) else "localhost"
     val socketPort = if (args.length > 2) args(2).toInt else 9999
 

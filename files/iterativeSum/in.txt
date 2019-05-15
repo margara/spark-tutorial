@@ -1,0 +1,4 @@
+First line of the file
+Second line of the file
+Third line of the file
+This is a test

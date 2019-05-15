@@ -25,7 +25,7 @@ object Bank2 {
   def main(args: Array[String]): Unit = {
     Utils.setLogLevels()
 
-    val master = if (args.length > 0) args(0) else "local"
+    val master = if (args.length > 0) args(0) else "local[4]"
     val filePath = if (args.length > 1) args(1) else "./"
 
     val spark = SparkSession.builder
