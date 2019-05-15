@@ -3,7 +3,6 @@ package batch.bank
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.max
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.apache.spark.{SparkConf, SparkContext}
 import utils.Utils
 
 /**
