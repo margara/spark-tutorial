@@ -52,13 +52,17 @@ object Bank {
 
     // Person with the maximum total amount of withdrawals
 
-    withdrawals
-        .groupBy("person")
-        .sum("amount")
-        .drop("account")
-        .agg(max("sum(amount)"))
+    val sumWithdrawals = withdrawals
+      .groupBy("person")
+      .sum("amount")
+      .select("person", "sum(amount)")
 
-    withdrawals.collect().foreach(println)
+    val maxTotal = sumWithdrawals.agg(max("sum(amount)")).first().getLong(0)
+
+    val maxWithdrawals = sumWithdrawals
+      .filter(sumWithdrawals("sum(amount)") === maxTotal)
+
+    maxWithdrawals.show()
 
     // Accounts with negative balance
 
@@ -82,7 +86,7 @@ object Bank {
       )
       .drop("sum(amount)")
 
-    negativeAccounts.collect.foreach(println)
+    negativeAccounts.show()
 
     spark.stop()
   }

@@ -32,6 +32,8 @@ object Bank2 {
       .appName("Bank2")
       .getOrCreate
 
+    import spark.implicits._
+
     val customSchema = StructType(
       Array(
         StructField("person", StringType, true),
@@ -53,33 +55,35 @@ object Bank2 {
       .schema(customSchema)
       .csv(filePath + "files/bank/withdrawals.csv")
 
-    withdrawals.persist()
+    // Used in two different queries
 
-    withdrawals.collect().foreach(println)
+    withdrawals.persist()
 
     // Person with the maximum total amount of withdrawals
 
-    withdrawals
-        .groupBy("person")
-        .sum("amount")
-        .drop("account")
-        .agg(max("sum(amount)"))
+    val sumWithdrawals = withdrawals
+      .groupBy("person")
+      .sum("amount")
+      .select($"person", $"sum(amount)".as("total"))
+
+    val maxTotal = sumWithdrawals.agg(max($"total")).first().getLong(0)
+
+    val maxWithdrawals = sumWithdrawals
+        .filter($"total" === maxTotal)
+
+    maxWithdrawals.show()
 
     // Accounts with negative balance
 
     val totalWithdrawalsPerAccount = withdrawals
         .groupBy("account")
         .sum("amount")
-        .drop("person")
         .as("totalWithdrawals")
 
     val totalDepositsPerAccount = deposits
       .groupBy("account")
       .sum("amount")
-      .drop("person")
       .as("totalDeposits")
-
-    import spark.implicits._
 
     val negativeAccounts = totalWithdrawalsPerAccount
       .join(totalDepositsPerAccount, $"totalWithdrawals.account" === $"totalDeposits.account", "left_outer")
@@ -87,9 +91,9 @@ object Bank2 {
         $"totalDeposits.sum(amount)".isNull && $"totalWithdrawals.sum(amount)" > 0
           || $"totalWithdrawals.sum(amount)"  > $"totalDeposits.sum(amount)"
       )
-      .drop("sum(amount)")
+      .select($"totalWithdrawals.account".as("account"))
 
-    negativeAccounts.collect.foreach(println)
+    negativeAccounts.show()
 
     spark.stop()
   }
