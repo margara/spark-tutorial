@@ -79,11 +79,13 @@ object Bank2 {
       .drop("person")
       .as("totalDeposits")
 
+    import spark.implicits._
+
     val negativeAccounts = totalWithdrawalsPerAccount
-      .join(totalDepositsPerAccount, Seq("account"), "left_outer")
+      .join(totalDepositsPerAccount, $"totalWithdrawals.account" === $"totalDeposits.account", "left_outer")
       .filter(
-        totalDepositsPerAccount("sum(amount)").isNull.and(totalWithdrawalsPerAccount("sum(amount)") > 0)
-          .or(totalWithdrawalsPerAccount("sum(amount)")  > totalDepositsPerAccount("sum(amount)"))
+        $"totalDeposits.sum(amount)".isNull && $"totalWithdrawals.sum(amount)" > 0
+          || $"totalWithdrawals.sum(amount)"  > $"totalDeposits.sum(amount)"
       )
       .drop("sum(amount)")
 
