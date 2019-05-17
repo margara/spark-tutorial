@@ -4,7 +4,8 @@ import org.apache.spark.{SparkConf, SparkContext}
 import utils.Utils
 
 /**
-  * First example: reads words from a file and counts the occurrence of each word.
+  * Iterative example: sum the length of word for each line.
+  * Version 3: with persist() and unpersist().
   */
 object IterativeSum3 {
   def main(args: Array[String]): Unit = {
