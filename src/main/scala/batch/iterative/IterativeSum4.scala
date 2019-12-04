@@ -5,10 +5,9 @@ import utils.Utils
 
 /**
   * Iterative example: sum the length of word for each line.
-  * Version 3: with persist() and unpersist().
-  * Wrong version, due to a concurrency problem between the driver and the executor inside the while loop.
+  * Version 4: with persist() and unpersist().
   */
-object IterativeSum3 {
+object IterativeSum4 {
   def main(args: Array[String]): Unit = {
     Utils.setLogLevels()
 
@@ -18,7 +17,7 @@ object IterativeSum3 {
     val sc = new SparkContext(
       new SparkConf()
         .setMaster(master)
-        .setAppName("IterativeSum3")
+        .setAppName("IterativeSum4")
     )
 
     val textFile = sc.textFile(filePath + "files/iterativeSum/in.txt")
@@ -27,17 +26,24 @@ object IterativeSum3 {
     // index is the index of the word to consider at the current iteration
     // sum is the partial sum of words at the current iteration
     var partialResult = textFile.map(w => (w.split(" "), 0, 0))
+    var oldPartialResult = partialResult
     partialResult.persist()
     var stillToProcess = partialResult.filter(r => r._1.length > r._2)
+    var firstIteration = true
 
     while (! stillToProcess.isEmpty()) {
-      val newPartialResult = partialResult.map(w => {
+      print("*** Iteration ***\n")
+      if (firstIteration) {
+        firstIteration = false
+      } else {
+        oldPartialResult.unpersist()
+      }
+      oldPartialResult = partialResult
+      partialResult = partialResult.map(w => {
+        print("Map\n")
         if (w._1.length > w._2) (w._1, w._2+1, w._3 + w._1(w._2).length)
         else w
-      })
-      partialResult.unpersist()
-      partialResult = newPartialResult
-      partialResult.persist()
+      }).persist()
       stillToProcess = partialResult.filter(r => r._1.length > r._2)
     }
 
