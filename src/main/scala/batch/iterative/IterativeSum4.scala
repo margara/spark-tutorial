@@ -32,7 +32,6 @@ object IterativeSum4 {
     var firstIteration = true
 
     while (! stillToProcess.isEmpty()) {
-      print("*** Iteration ***\n")
       if (firstIteration) {
         firstIteration = false
       } else {
@@ -40,7 +39,6 @@ object IterativeSum4 {
       }
       oldPartialResult = partialResult
       partialResult = partialResult.map(w => {
-        print("Map\n")
         if (w._1.length > w._2) (w._1, w._2+1, w._3 + w._1(w._2).length)
         else w
       }).persist()

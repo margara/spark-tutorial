@@ -38,7 +38,7 @@ object Bank2 {
       Array(
         StructField("person", StringType, true),
         StructField("account", StringType, true),
-        StructField("amount", IntegerType, true),
+        StructField("amount", IntegerType, true)
       )
     )
 
