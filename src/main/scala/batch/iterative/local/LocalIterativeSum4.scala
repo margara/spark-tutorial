@@ -47,6 +47,7 @@ object LocalIterativeSum4 {
       stillToProcess = partialResult.filter(r => r._1.length > r._2)
     }
 
+    print("*** Foreach ***\n")
     partialResult.foreach(r => println(r._1.mkString(" ") + " " + r._3))
 
     sc.stop()
